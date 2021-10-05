@@ -1,4 +1,7 @@
 # node-red-contrib-nvl
+![NPM](https://img.shields.io/npm/l/node-red-contrib-nvl)
+[![GitHub](https://img.shields.io/badge/View%20on-GitHub-brightgreen)](https://github.com/Hopperpop/node-red-contrib-nvl)
+![npm](https://img.shields.io/npm/v/node-red-contrib-nvl)
 
 Codesys network variable list parser for node-red. With these nodes and the standard udp nodes, you can receive and send data from/to a Codesys plc.
 This is an improved version of https://flows.nodered.org/node/node-red-contrib-netvar. And is build on top of [jisotalo](https://github.com/jisotalo) [iec-61131-3](https://github.com/jisotalo/iec-61131-3) library.
