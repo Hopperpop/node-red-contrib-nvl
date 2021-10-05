@@ -2,7 +2,7 @@ const helper = require('./nvl-helper.js');
 const ParseNvlDef = helper.ParseNvlDef;
 
 module.exports = function(RED) {
-    function nvlReciever(config) {
+    function nvlReceiver(config) {
         RED.nodes.createNode(this,config);
         var node = this;
         node.datatypes = {};
@@ -112,5 +112,5 @@ module.exports = function(RED) {
 
         }); 
     }
-    RED.nodes.registerType("nvl-recieve",nvlReciever);
+    RED.nodes.registerType("nvl-receive",nvlReceiver);
 }
