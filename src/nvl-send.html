@@ -1,0 +1,175 @@
+<script type="text/javascript">
+    RED.nodes.registerType('nvl-send',{
+        category: 'parser',
+        color: '#DEBD5C',
+        align: 'right',
+        defaults: {
+            name: {value:""},
+            definition: {value:"TYPE NVL\:\r\nSTRUCT\r\n\r\nEND_STRUCT\r\nEND_TYPE"},
+            listId: {value: 0}
+        },
+        inputs:1,
+        outputs:1,
+        inputLabels: "object",
+        outputLabels: ["buffer"],
+        icon: "nvl-send.svg",
+        label: function() {
+            return this.name||"NVL-send";
+        },
+        paletteLabel: "NVL-send",
+
+        oneditprepare: function() {
+            this.editor = RED.editor.createEditor({
+                id: 'node-input-definition',
+                mode: 'ace/mode/text',
+                value: this.definition
+            });
+            $("#node-input-listId").typedInput({
+                type:"num",
+                types:["num"]
+            })
+        },
+        oneditsave: function() {
+            $("#node-input-definition").val(this.editor.getValue());
+            this.editor.destroy();
+            delete this.editor;
+        },
+        oneditcancel: function() {
+            this.editor.destroy();
+            delete this.editor;
+        }
+
+    });
+
+
+</script>
+
+<script type="text/html" data-template-name="nvl-send">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input style="width: calc(100% - 120px)" type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-listId"><i class="fa fa-list-ol"></i> List Id</label>
+        <input style="width: calc(100% - 120px)" type="text" id="node-input-listId">
+    </div>
+    
+    <div class="form-row">
+        <label for="node-input-definition" style="width: 200px;"><i class="fa fa-globe"></i> Network variable list</label>
+        <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-definition"></div>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="nvl-send">
+    <p>A parser node to convert an object to a <i>network variable list</i> telegram, who can be sent with an udp node to a Codesys controller. 
+        This node needs a variable definition to make the conversion, and a list Id. 
+        The node has an internal memory for merging partial input objects with the previous values.</p>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>payload<span class="property-type">object</span></dt>
+        <dd> An object containing the values for the telegram.</dd>
+        <dt class="optional">id<span class="property-type">number</span></dt>
+        <dd>Use this property to set the list Id dynamically.</dd>
+        <dt class="optional">nvl<span class="property-type">string</span></dt>
+        <dd>Use this property to set the network variable list definition dynamically.</dd>
+    </dl>
+
+ <h3>Outputs</h3>
+     <ol class="node-ports">
+            <dl class="message-properties">
+                <dt>payload <span class="property-type">buffer</span></dt>
+                <dd>Buffer containing the telegram data.</dd>
+            </dl>
+     </ol>
+
+<h3>Details</h3>
+    <p> The <i>network variable list</i> needs to be defined in the editor or provided with <code>msg.nvl</code> as a string. 
+        The definiton follows the IEC-61131-3 syntax, but the variable list needs to be defined in a structure named 'NVL' for the parser to understand it.
+        Additional type definitions can be added to make more complex variable definitons: STRUCT, ENUM, UNION,... See the api reference for more information.
+    </p>
+    <p>
+        The list Id (COB-ID) should match with the one in the controller. It can be set in the editor or with <code>msg.id</code>.
+    </p>
+    <p>
+        <code>msg.payload</code> should be an object containing all or subparts of the defined variables with the value that needs to be send. 
+        Arrays are always handled as zero-indexed. 
+        Complex data types like <code>ARRAY[..] OF ARRAY[..] OF myStruct</code> are possible.
+        This node automatically merges the variables with the previous values, making it possible to send a subset of the variables to this node.
+        At startup the default value (ex. 0, FALSE) of the particular data type is used if it's not send in the first <code>msg.payload</code>.
+    </p>
+    <p>The telegram is limited to a data size of 256 bytes. And uses the "Pack variables" option in the Codesys editor. No checksum is calculated.</p>
+
+<h3>Example</h3>
+    <dl class="message-properties">
+        <dt>payload (in)<span class="property-type">object</span></dt>
+        <dd><pre>
+{
+    "xBool": true,
+    "iInt": 5,
+    "myEnum": "member1",
+    "aBools": [
+        [
+            false,
+            true,
+            true
+        ],
+        [
+            false,
+            true,
+            false
+        ]
+    ],
+    "stStruct": {
+        "stEnum": 100
+    },
+    "aStruct": [
+        {
+            "stEnum": "memberx"
+        },
+        {
+            "stEnum": 1
+        }
+    ],
+    "sString": "MyToLongStringThatWillBeCutOff"
+}
+        </pre></dd>
+        <dt>nvl<span class="property-type">string</span></dt>
+        <dd><pre>
+TYPE NVL:
+STRUCT
+    xBool:      BOOL;
+    iInt:       INT;
+    //My comment
+    myEnum:     E_Enum;
+    aBools:     ARRAY[1..2,1..3] OF BOOL;
+    stStruct:   ST_test;
+    aStruct:    ARRAY[1..2] OF ST_test;
+    sString:    STRING(20);
+END_STRUCT
+END_TYPE
+
+TYPE E_Enum :
+    (
+    member0 := 0,
+    member1,
+    memberx := 5,
+    member100 := 100
+    );
+END_TYPE
+
+TYPE ST_test:
+STRUCT
+    stEnum:       E_Enum;
+END_STRUCT
+END_TYPE
+        </pre></dd>
+    </dl>
+    <p></p>
+
+
+<h3>References</h3>
+    <ul>
+        <li><a href="https://github.com/jisotalo/iec-61131-3">IEC 61131-3 API</a> - full description schema parser</li>
+    </ul>
+</script>

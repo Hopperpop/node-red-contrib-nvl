@@ -1,0 +1,29 @@
+{
+  "name": "node-red-contrib-nvl",
+  "version": "1.0.0",
+  "description": "CODESYS Network Variable List parser.",
+  "keywords": [
+    "node-red",
+    "CODESYS",
+    "nvl",
+    "plc",
+    "iec-61131-3",
+    "61131-3"
+  ],
+  "author": "Hopperpop",
+  "license": "MIT",
+  "dependencies": {
+    "iec-61131-3": "^1.0.0",
+    "lodash.merge": "^4.6.2"
+  },
+  "devDependencies": {},
+  "files": [
+    "src/"
+  ],
+  "node-red": {
+    "nodes": {
+      "nvl-recieve": "src/nvl-recieve.js",
+      "nvl-send": "src/nvl-send.js"
+    }
+  }
+}
