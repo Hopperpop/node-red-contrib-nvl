@@ -1,5 +1,5 @@
 <script type="text/javascript">
-    RED.nodes.registerType('nvl-recieve',{
+    RED.nodes.registerType('nvl-receive',{
         category: 'parser',
         color: '#DEBD5C',
         defaults: {
@@ -11,11 +11,11 @@
         outputs:1,
         inputLabels: "buffer",
         outputLabels: ["object"],
-        icon: "nvl-recieve.svg",
+        icon: "nvl-receive.svg",
         label: function() {
-            return this.name||"NVL-recieve";
+            return this.name||"NVL-receive";
         },
-        paletteLabel: "NVL-recieve",
+        paletteLabel: "NVL-receive",
 
         oneditprepare: function() {
             this.editor = RED.editor.createEditor({
@@ -43,7 +43,7 @@
 
 </script>
 
-<script type="text/html" data-template-name="nvl-recieve">
+<script type="text/html" data-template-name="nvl-receive">
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input style="width: calc(100% - 120px)" type="text" id="node-input-name" placeholder="Name">
@@ -60,7 +60,7 @@
     </div>
 </script>
 
-<script type="text/html" data-help-name="nvl-recieve">
+<script type="text/html" data-help-name="nvl-receive">
     <p>A parser node to convert a <i>network variable list telegram</i> to an object. The telegram can be fetch from a Codesys controller with the help of an udp node. 
         This node needs a variable definition to make the conversion, and a list Id.</p>
     <h3>Inputs</h3>

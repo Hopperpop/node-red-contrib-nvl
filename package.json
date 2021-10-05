@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-nvl",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CODESYS Network Variable List parser.",
   "keywords": [
     "node-red",
@@ -30,7 +30,7 @@
   ],
   "node-red": {
     "nodes": {
-      "nvl-recieve": "src/nvl-recieve.js",
+      "nvl-receive": "src/nvl-receive.js",
       "nvl-send": "src/nvl-send.js"
     }
   }

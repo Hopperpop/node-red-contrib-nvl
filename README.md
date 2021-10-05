@@ -1,6 +1,6 @@
 # node-red-contrib-nvl
 
-Codesys network variable list parser for node-red. With these nodes and the standard udp nodes, you can recieve and send data from/to a Codesys plc.
+Codesys network variable list parser for node-red. With these nodes and the standard udp nodes, you can receive and send data from/to a Codesys plc.
 This is an improved version of https://flows.nodered.org/node/node-red-contrib-netvar. And is build on top of [jisotalo](https://github.com/jisotalo) [iec-61131-3](https://github.com/jisotalo/iec-61131-3) library.
 
 Supported datatypes:
