@@ -10,8 +10,16 @@
     "iec-61131-3",
     "61131-3"
   ],
-  "author": "Hopperpop",
+  "author": "Hopperpop <Hopperpop.git@gmail.com>",
   "license": "MIT",
+  "homepage": "https://github.com/Hopperpop/node-red-contrib-nvl",
+  "bugs": {
+    "url": "https://github.com/Hopperpop/node-red-contrib-nvl/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hopperpop/node-red-contrib-nvl"
+  },
   "dependencies": {
     "iec-61131-3": "^1.0.0",
     "lodash.merge": "^4.6.2"
