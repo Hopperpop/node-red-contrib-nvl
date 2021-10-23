@@ -8,7 +8,8 @@
     "nvl",
     "plc",
     "iec-61131-3",
-    "61131-3"
+    "61131-3",
+    "netvar"
   ],
   "author": "Hopperpop <Hopperpop.git@gmail.com>",
   "license": "MIT",
