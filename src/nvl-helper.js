@@ -13,7 +13,7 @@ exports.ParseNvlDef = function (definition,node){
         //Check size
         if (nvl.byteLength > 256){
             if(node){node.status({fill:"red",shape:"ring",text:"To big"})};
-            throw new Error(`Size to big: $(nvl.byteLength) > 256`);
+            throw new Error(`NVl data size is to big: ${nvl.byteLength} bytes > 256`);
         }
 
         //Count variables

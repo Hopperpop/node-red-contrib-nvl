@@ -8,7 +8,6 @@ module.exports = function(RED) {
         var node = this;
 
         node.mem = {}; //Storage for counters and previous values
-        node.coutner = 0;
         node.listId = config.listId;
 
         try{
