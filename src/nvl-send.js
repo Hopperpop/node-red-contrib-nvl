@@ -75,7 +75,12 @@ module.exports = function(RED) {
     
                 //Build full message and send
                 msg.payload = Buffer.concat([header,data]);
+
+                //Increment counter for next itteration
                 node.mem[listId].counter += 1;
+                if(node.mem[listId].counter > 65535){
+                    node.mem[listId].counter = 0;
+                }
                 send(msg);
                 if (done) {
                     done();
