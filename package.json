@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-nvl",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "CODESYS Network Variable List parser.",
   "keywords": [
     "node-red",
@@ -9,7 +9,9 @@
     "plc",
     "iec-61131-3",
     "61131-3",
-    "netvar"
+    "netvar",
+	"network variable list",
+	"udp"
   ],
   "author": "Hopperpop <Hopperpop.git@gmail.com>",
   "license": "MIT",
@@ -32,7 +34,13 @@
   "node-red": {
     "nodes": {
       "nvl-receive": "src/nvl-receive.js",
-      "nvl-send": "src/nvl-send.js"
+      "nvl-send": "src/nvl-send.js",
+      "nvl-datatypes": "src/nvl-datatypes.js"
     }
-  }
+  },
+  "examples": [
+    "1_Basic read-write.json",
+    "2_Structures Arrays Enums.json",
+    "3_Dynamic properties.json"
+  ]
 }

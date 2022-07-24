@@ -3,7 +3,7 @@
 [![GitHub](https://img.shields.io/badge/View%20on-GitHub-brightgreen)](https://github.com/Hopperpop/node-red-contrib-nvl)
 [![npm](https://img.shields.io/npm/v/node-red-contrib-nvl)](https://www.npmjs.com/package/node-red-contrib-nvl)
 
-Codesys network variable list parser for node-red. With these nodes and the standard udp nodes, you can receive and send data from/to a Codesys plc.
+Codesys network variable list parser for node-red. With these nodes and the standard udp nodes, you can receive and send data from/to a Codesys plc (Wago, KEB,...).
 This is an improved version of [node-red-contrib-netvar](https://flows.nodered.org/node/node-red-contrib-netvar). And is build on top of [jisotalo](https://github.com/jisotalo) [iec-61131-3](https://github.com/jisotalo/iec-61131-3) library.
 
 Supported datatypes:
@@ -20,11 +20,11 @@ Supported datatypes:
 - REAL, LREAL
 
 
-![afbeelding](https://user-images.githubusercontent.com/11853634/136016642-57c9fdd0-a048-474c-ad2c-983352c89916.png)
-
+![node-red-contrib-nvl](https://user-images.githubusercontent.com/11853634/180651404-6e4dfcec-39a8-4b2b-ad70-1a76e0d3ca50.gif)
 
 # Notice
-This node hasn't been tested througly yet with real hardware. Bugs can still exist. Contributing by providing raw data telegrams send from a Codesys controller with the associated nvl definiton are appreciated for further development.
+- Switch to the monaco editor for syntax highlight. See: [discourse.nodered.or](https://discourse.nodered.org/t/getting-the-monaco-editor-to-work-in-nr-2-x/65466/2)
+- Bugs can still exist. Contributing by providing raw data telegrams send from a Codesys controller with the associated nvl definiton are appreciated for further development.
 
 # License
 Copyright (c) 2021 Hopperpop

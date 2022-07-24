@@ -4,8 +4,9 @@
         color: '#DEBD5C',
         defaults: {
             name: {value:""},
-            definition: {value:"TYPE NVL\:\r\nSTRUCT\r\n\r\nEND_STRUCT\r\nEND_TYPE"},
-            listId: {value: 0}
+            definition: {value:"VAR_GLOBAL\r\n\r\nEND_VAR"},
+            listId: {value: 0},
+            globaltypes: {value:"", type:"nvl-datatypes", required: false}
         },
         inputs:1,
         outputs:1,
@@ -20,13 +21,24 @@
         oneditprepare: function() {
             this.editor = RED.editor.createEditor({
                 id: 'node-input-definition',
-                mode: 'ace/mode/text',
+                mode: 'ace/mode/st',
                 value: this.definition
             });
             $("#node-input-listId").typedInput({
                 type:"num",
                 types:["num"]
             })
+        },
+        oneditresize: function(size) {
+            var rows = $("#dialog-form>div:not(.node-text-editor-row)");
+            var height = $("#dialog-form").height();
+            for (var i=0; i<rows.length; i++) {
+                height -= $(rows[i]).outerHeight(true);
+            }
+            var editorRow = $("#dialog-form>div.node-text-editor-row");
+            height -= (parseInt(editorRow.css("marginTop"))+parseInt(editorRow.css("marginBottom")));
+            $("#dialog-form .node-text-editor").css("height",height+"px");
+            this.editor.resize();
         },
         oneditsave: function() {
             $("#node-input-definition").val(this.editor.getValue());
@@ -45,16 +57,21 @@
 
 <script type="text/html" data-template-name="nvl-receive">
     <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-        <input style="width: calc(100% - 120px)" type="text" id="node-input-name" placeholder="Name">
+        <label style="width: 130px" for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input style="width: calc(100% - 140px)" type="text" id="node-input-name" placeholder="Name">
     </div>
 
     <div class="form-row">
-        <label for="node-input-listId"><i class="fa fa-list-ol"></i> List Id</label>
-        <input style="width: calc(100% - 120px)" type="text" id="node-input-listId">
+        <label style="width: 130px" for="node-input-listId"><i class="fa fa-list-ol"></i> List Id</label>
+        <input style="width: calc(100% - 140px)" type="text" id="node-input-listId">
+    </div>
+
+    <div class="form-row">
+        <label style="width: 130px" for="node-input-globaltypes"><i class="fa fa-file-code-o"></i> Global datatypes</label>
+        <input style="width: calc(100% - 140px)" id="node-input-globaltypes">
     </div>
     
-    <div class="form-row">
+    <div class="form-row node-text-editor-row">
         <label for="node-input-definition" style="width: 200px;"><i class="fa fa-globe"></i> Network variable list</label>
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-definition"></div>
     </div>
@@ -83,20 +100,20 @@
 
     <h3>Details</h3>
         <p> The <i>network variable list</i> needs to be defined in the editor or provided with <code>msg.nvl</code> as a string. 
-            The definiton follows the IEC-61131-3 syntax, but the variable list needs to be defined in a structure named 'NVL' for the parser to understand it.
-            Additional type definitions can be added to make more complex variable definitons: STRUCT, ENUM, UNION,... See the api reference for more information.
+            The definiton follows the IEC-61131-3 syntax, and the parser looks for a VAR_GLOBAL or a structure named NVL.
+            Additional type definitions can be added to make more complex variable definitons: STRUCT, ENUM, UNION,... These can be inserted directily in the nvl definition or from a global defined datatype definition.
+            See the api reference for more information.
         </p>
         <p>
             The list Id (COB-ID) should match with the one in the telegram. Messages without matching Id are dropped. The Id can be set in the editor or with <code>msg.id</code>.
         </p>
-        <p>The telegram is limited to a data size of 256 bytes. And uses the "Pack variables" option in the Codesys editor. No checksum is calculated.</p>
+        <p>The telegram is limited to a data size of 256 bytes, and uses the "Pack variables" option in the Codesys editor. No checksum is calculated.</p>
 
 <h3>Example</h3>
     <dl class="message-properties">
         <dt>nvl<span class="property-type">string</span></dt>
         <dd><pre>
-TYPE NVL:
-STRUCT
+VAR_GLOBAL
     xBool:      BOOL;
     iInt:       INT;
     //My comment
@@ -105,8 +122,7 @@ STRUCT
     stStruct:   ST_test;
     aStruct:    ARRAY[1..2] OF ST_test;
     sString:    STRING(20);
-END_STRUCT
-END_TYPE
+END_VAR
 
 TYPE E_Enum :
     (
