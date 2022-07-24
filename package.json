@@ -34,5 +34,10 @@
       "nvl-receive": "src/nvl-receive.js",
       "nvl-send": "src/nvl-send.js"
     }
-  }
+  },
+  "examples": [
+    "1_Basic read-write.json",
+    "2_Structures Arrays Enums.json",
+    "3_Dynamic properties.json"
+  ]
 }
