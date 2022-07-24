@@ -12,9 +12,20 @@
         oneditprepare: function() {
             this.editor = RED.editor.createEditor({
                 id: 'node-config-input-datatypes',
-                mode: 'ace/mode/text',
+                mode: 'ace/mode/st',
                 value: this.datatypes
             });
+        },
+        oneditresize: function(size) {
+            var rows = $("#node-config-dialog-edit-form>div:not(.node-text-editor-row)");
+            var height = $("#node-config-dialog-edit-form").height();
+            for (var i=0; i<rows.length; i++) {
+                height -= $(rows[i]).outerHeight(true);
+            }
+            var editorRow = $("#node-config-dialog-edit-form>div.node-text-editor-row");
+            height -= (parseInt(editorRow.css("marginTop"))+parseInt(editorRow.css("marginBottom"))) + 10;
+            $("#node-config-dialog-edit-form .node-text-editor").css("height",height+"px");
+            this.editor.resize();
         },
         oneditsave: function() {
             $("#node-config-input-datatypes").val(this.editor.getValue());
@@ -33,7 +44,7 @@
         <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
         <input style="width: calc(100% - 120px)" type="text" id="node-config-input-name" placeholder="Name">
     </div>
-    <div class="form-row">
+    <div class="form-row node-text-editor-row">
         <label for="node-config-input-datatypes" style="width: 200px;"><i class="fa fa-globe"></i> Datatypes definition</label>
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-config-input-datatypes"></div>
     </div>

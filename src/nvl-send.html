@@ -22,13 +22,24 @@
         oneditprepare: function() {
             this.editor = RED.editor.createEditor({
                 id: 'node-input-definition',
-                mode: 'ace/mode/text',
+                mode: 'ace/mode/st',
                 value: this.definition
             });
             $("#node-input-listId").typedInput({
                 type:"num",
                 types:["num"]
             })
+        },
+        oneditresize: function(size) {
+            var rows = $("#dialog-form>div:not(.node-text-editor-row)");
+            var height = $("#dialog-form").height();
+            for (var i=0; i<rows.length; i++) {
+                height -= $(rows[i]).outerHeight(true);
+            }
+            var editorRow = $("#dialog-form>div.node-text-editor-row");
+            height -= (parseInt(editorRow.css("marginTop"))+parseInt(editorRow.css("marginBottom")));
+            $("#dialog-form .node-text-editor").css("height",height+"px");
+            this.editor.resize();
         },
         oneditsave: function() {
             $("#node-input-definition").val(this.editor.getValue());
@@ -61,7 +72,7 @@
         <input style="width: calc(100% - 140px)" id="node-input-globaltypes">
     </div>
     
-    <div class="form-row">
+    <div class="form-row node-text-editor-row">
         <label for="node-input-definition" style="width: 200px;"><i class="fa fa-globe"></i> Network variable list</label>
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-definition"></div>
     </div>
