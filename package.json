@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-nvl",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "CODESYS Network Variable List parser.",
   "keywords": [
     "node-red",
@@ -9,7 +9,9 @@
     "plc",
     "iec-61131-3",
     "61131-3",
-    "netvar"
+    "netvar",
+	"network variable list",
+	"udp"
   ],
   "author": "Hopperpop <Hopperpop.git@gmail.com>",
   "license": "MIT",
