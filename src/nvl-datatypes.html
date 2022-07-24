@@ -1,0 +1,61 @@
+<script type="text/javascript">
+    RED.nodes.registerType('nvl-datatypes',{
+        category: 'config',
+        defaults: {
+            name: {value:""},
+            datatypes: {value:""}
+        },
+        label: function() {
+            return this.name||"NVL-datatypes";
+        },
+
+        oneditprepare: function() {
+            this.editor = RED.editor.createEditor({
+                id: 'node-config-input-datatypes',
+                mode: 'ace/mode/text',
+                value: this.datatypes
+            });
+        },
+        oneditsave: function() {
+            $("#node-config-input-datatypes").val(this.editor.getValue());
+            this.editor.destroy();
+            delete this.editor;
+        },
+        oneditcancel: function() {
+            this.editor.destroy();
+            delete this.editor;
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="nvl-datatypes">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input style="width: calc(100% - 120px)" type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-datatypes" style="width: 200px;"><i class="fa fa-globe"></i> Datatypes definition</label>
+        <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-config-input-datatypes"></div>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="nvl-datatypes">
+    <p>Datatypes can be defined here and reused in multiple nodes. Different types are added below each other and follow the IEC-61131-3 syntax. It's possible to define STRUCT, ENUM, UNION, ALIASES.</p>
+    <h3>Example</h3>
+    <dd><pre>
+TYPE E_Enum :
+    (
+    member0 := 0,
+    member1,
+    memberx := 5,
+    member100 := 100
+    );
+END_TYPE
+
+TYPE ST_test:
+STRUCT
+    stEnum:       E_Enum;
+END_STRUCT
+END_TYPE
+    </pre></dd>
+</script>

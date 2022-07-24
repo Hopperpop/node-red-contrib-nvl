@@ -8,8 +8,18 @@ module.exports = function(RED) {
         node.datatypes = {};
         node.listId = config.listId;
 
+
+        // Retrieve the global datatypes
+        node.globaltypes = RED.nodes.getNode(config.globaltypes);
+        if (node.globaltypes) {
+            node.gvl = node.globaltypes.datatypes;
+        } else {
+            node.gvl = "";
+        }
+
+        // Parse static nvl definition
         try{
-            node.nvl = ParseNvlDef(config.definition, node);
+            node.nvl = ParseNvlDef(config.definition, node, node.gvl);
         }catch(err){
             node.error(err);
             node.nvl = null;
@@ -26,7 +36,7 @@ module.exports = function(RED) {
             if(typeof msg.nvl === 'string' || msg.nvl instanceof String){
                 //Use dynamic nvl
                 try{
-                    nvl = ParseNvlDef(msg.nvl, node);
+                    nvl = ParseNvlDef(msg.nvl, node, node.gvl);
                 }catch(err){
                     if (done) {
                         // Node-RED 1.0 compatible

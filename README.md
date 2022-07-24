@@ -23,8 +23,6 @@ Supported datatypes:
 ![afbeelding](https://user-images.githubusercontent.com/11853634/136016642-57c9fdd0-a048-474c-ad2c-983352c89916.png)
 
 
-# Notice
-This node hasn't been tested througly yet with real hardware. Bugs can still exist. Contributing by providing raw data telegrams send from a Codesys controller with the associated nvl definiton are appreciated for further development.
 
 # License
 Copyright (c) 2021 Hopperpop
