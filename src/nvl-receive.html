@@ -6,7 +6,8 @@
             name: {value:""},
             definition: {value:"VAR_GLOBAL\r\n\r\nEND_VAR"},
             listId: {value: 0},
-            globaltypes: {value:"", type:"nvl-datatypes", required: false}
+            globaltypes: {value:"", type:"nvl-datatypes", required: false},
+            pack: {value: true, required: true}
         },
         inputs:1,
         outputs:1,
@@ -27,6 +28,10 @@
             $("#node-input-listId").typedInput({
                 type:"num",
                 types:["num"]
+            });
+            $("#node-input-pack").typedInput({
+                type:"bool",
+                types:["bool"]
             })
         },
         oneditresize: function(size) {
@@ -64,6 +69,11 @@
     <div class="form-row">
         <label style="width: 130px" for="node-input-listId"><i class="fa fa-list-ol"></i> List Id</label>
         <input style="width: calc(100% - 140px)" type="text" id="node-input-listId">
+    </div>
+
+    <div class="form-row">
+        <label style="width: 130px" for="node-input-pack"><i class="fa fa-th"></i> Pack variables</label>
+        <input style="width: calc(100% - 140px)" type="text" id="node-input-pack">
     </div>
 
     <div class="form-row">

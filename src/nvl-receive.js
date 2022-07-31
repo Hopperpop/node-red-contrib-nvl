@@ -6,7 +6,9 @@ module.exports = function(RED) {
         RED.nodes.createNode(this,config);
         var node = this;
         node.datatypes = {};
+        node.mem = {}; //Storage for counters and previous values
         node.listId = config.listId;
+        node.pack = config.pack !== 'false';
 
 
         // Retrieve the global datatypes
@@ -19,7 +21,7 @@ module.exports = function(RED) {
 
         // Parse static nvl definition
         try{
-            node.nvl = ParseNvlDef(config.definition, node, node.gvl);
+            node.nvl = ParseNvlDef(config.definition, node, node.gvl, node.pack);
         }catch(err){
             node.error(err);
             node.nvl = null;
@@ -36,7 +38,7 @@ module.exports = function(RED) {
             if(typeof msg.nvl === 'string' || msg.nvl instanceof String){
                 //Use dynamic nvl
                 try{
-                    nvl = ParseNvlDef(msg.nvl, node, node.gvl);
+                    nvl = ParseNvlDef(msg.nvl, node, node.gvl, node.pack);
                 }catch(err){
                     if (done) {
                         // Node-RED 1.0 compatible
@@ -59,8 +61,8 @@ module.exports = function(RED) {
             }
 
             //Check if payload is buffer
-            if (!Buffer.isBuffer(msg.payload)){
-                let err = new Error("Payload is not a buffer.")
+            if (!Buffer.isBuffer(msg.payload) || msg.payload.length < 20){
+                let err = new Error("Payload is not a valid buffer.")
                 node.status({fill:"red",shape:"dot",text:"Error"});
                 if (done) {
                     // Node-RED 1.0 compatible
@@ -72,20 +74,33 @@ module.exports = function(RED) {
                 return;
             }
 
+            let tele = {
+                listId:     msg.payload.readUInt16LE(8),        //Index, COB-ID, listId
+                subId:      msg.payload.readUInt16LE(10),       //SubIndex
+                varSize:    msg.payload.readUInt16LE(12),       //Number of variables
+                size:       msg.payload.readUInt16LE(14),       //Total length telegram  (header+data)
+                counter:    msg.payload.readUInt16LE(16)        //Send counter
+            }
 
             //Check matching list id
-            if (msg.payload.readUInt16LE(8) != listId){
+            if (tele.listId != listId){
                 node.status({fill:"yellow",shape:"dot",text:"Wrong list Id"});
                 if (done){done()};
                 return;
-            }else{
-                node.status({fill:"green",shape:"dot",text:""});
             }
 
-            //Check if size matches
+            //Check if valid packages
+            let err = null;
             let dataSize = msg.payload.length - 20;
-            if(dataSize !== nvl.byteLength){
-                let err = new Error(`Data size doesn\' match. Expected: ${nvl.byteLength} Got: ${dataSize}`);
+            if( tele.subId >= nvl.packages.length){
+                err = new Error(`Telegram has a subIndex higher than expected: ${tele.subId}`);
+            } else if ( tele.size !== msg.payload.length ){
+                err = new Error(`Telegram size (${msg.payload.length}B) is different than the value in the header (${tele.size}B).`);
+            } else if ( dataSize !== nvl.packages[tele.subId].byteSize ){
+                err = new Error(`Telegram datasize doesn\'t match with nvl definition for subIndex ${tele.subId}. Expected: ${nvl.packages[tele.subId].byteSize}B Got: ${dataSize}B`);
+            }
+
+            if( err ){
                 node.status({fill:"red",shape:"dot",text:"Error"});
                 if (done) {
                     // Node-RED 1.0 compatible
@@ -96,28 +111,70 @@ module.exports = function(RED) {
                 }
                 return;
             }
+  
+            //Create new listId storage space if needed
+            if (!(listId in node.mem)){
+                node.mem[listId] = {
+                    cntFull: -1, //Last fully received packages counter
+                };
+            }
 
-            //Try to parse buffer
-            try{
+            //Create new counter storage space if needed
+            if (!(tele.counter in node.mem[listId])){
+                node.mem[listId][tele.counter] = {
+                    recSubId: new Set(),                        //Storage for received package id numbers
+                    data: Buffer.alloc( nvl.byteLength )        //Data storage
+                }                
+            }
 
-                msg.payload = nvl.convertFromBuffer(msg.payload.slice(20));
-                send(msg);
-                if (done) {
-                    done();
+
+            let packageData = node.mem[listId][tele.counter];
+
+            //Add data to buffer if not older/delayed data, and subId not already received
+
+            if ( !helper.isOldId(tele.counter, node.mem[listId].cntFull) && (!packageData.recSubId.has(tele.subId))){
+                //counterData.data.write( msg.payload.slice(20) , nvl.packages[tele.subId].offset);
+                msg.payload.slice(20).copy(packageData.data, nvl.packages[tele.subId].offset);
+                packageData.recSubId.add(tele.subId);
+
+                //Check if it's the last package
+                if (packageData.recSubId.size === Object.keys(nvl.packages).length){
+                    
+                    //Save succesfull packages assembly and remove older data
+                    node.mem[listId].cntFull = tele.counter;
+                    Object.keys(node.mem[listId]).forEach(key => {
+                        if ( helper.isOldId(key, tele.counter) ){
+                            delete node.mem[listId];
+                        }
+                    });
+
+                    //Try to parse buffer and send
+                    try{
+                        msg.payload = nvl.convertFromBuffer(packageData.data);
+                        send(msg);
+                        if (done) {
+                            done();
+                        }
+                        node.status({fill:"green",shape:"dot",text:""});
+
+                    }catch(err){
+
+                        //Error during parsing
+                        node.status({fill:"red",shape:"dot",text:"Error"});
+                        if (done) {
+                            // Node-RED 1.0 compatible
+                            done(err);
+                        } else {
+                            // Node-RED 0.x compatible
+                            node.error(err, msg);
+                        }
+                        return;
+                    }
+                }else{
+                    if (done) { done(); }
                 }
-
-            }catch(err){
-
-                //Error during parsing
-                node.status({fill:"red",shape:"dot",text:"Error"});
-                if (done) {
-                    // Node-RED 1.0 compatible
-                    done(err);
-                } else {
-                    // Node-RED 0.x compatible
-                    node.error(err, msg);
-                }
-                return;
+            }else{
+                if (done) { done(); }
             }
 
         }); 
