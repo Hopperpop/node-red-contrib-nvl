@@ -32,7 +32,28 @@
             $("#node-input-pack").typedInput({
                 type:"bool",
                 types:["bool"]
-            })
+            });
+            $("#node-nvl-editor-import").on("click", function() {
+                $("#node-nvl-editor-file").click();
+            });
+            let node = this;
+            $("#node-nvl-editor-file").on("change", function(){
+                var reader = new FileReader();
+                reader.onload = function(event){
+                    let parser = new DOMParser();
+                    let xmlDoc = parser.parseFromString(event.target.result,"text/xml");
+                    let gvl = xmlDoc.getElementsByTagName("GVL")[0];
+                    let netVarSettings = gvl.getElementsByTagName("NetvarSettings")[0];
+
+                    //Set list id
+                    $("#node-input-listId").typedInput('value', netVarSettings.getElementsByTagName("ListIdentifier")[0].innerHTML);
+                    //Set pack variable
+                    $("#node-input-pack").typedInput('value', netVarSettings.getElementsByTagName("Pack")[0].innerHTML);
+                    //Set nvl
+                    node.editor.setValue( gvl.getElementsByTagName("Declarations")[0].firstChild.data );
+                }
+                reader.readAsText(this.files[0],"UTF-8");
+            });
         },
         oneditresize: function(size) {
             var rows = $("#dialog-form>div:not(.node-text-editor-row)");
@@ -84,6 +105,11 @@
     <div class="form-row node-text-editor-row">
         <label for="node-input-definition" style="width: 200px;"><i class="fa fa-globe"></i> Network variable list</label>
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-definition"></div>
+    </div>
+
+    <div class="form-row">
+        <input style="display:none" type="file" accept=".gvl,.*" id="node-nvl-editor-file">
+        <button type="button" class="red-ui-button" id="node-nvl-editor-import">Import..</button>
     </div>
 </script>
 

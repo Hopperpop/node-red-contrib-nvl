@@ -10,6 +10,7 @@ module.exports = function(RED) {
         node.mem = {}; //Storage for counters and previous values
         node.listId = config.listId;
         node.pack = config.pack !== 'false';
+        node.port = config.port;
 
         // Retrieve the global datatypes
         node.globaltypes = RED.nodes.getNode(config.globaltypes);
@@ -33,11 +34,12 @@ module.exports = function(RED) {
 
             //Collect and check nvl definition and listId
             let listId = msg.id || node.listId;
+            let pack = msg.pack || node.pack;
             let nvl = {};
             if(typeof msg.nvl === 'string' || msg.nvl instanceof String){
                 //Use dynamic nvl
                 try{
-                    nvl = ParseNvlDef(msg.nvl, node, node.gvl, node.pack);
+                    nvl = ParseNvlDef(msg.nvl, node, node.gvl, pack);
                 }catch(err){
                     if (done) {
                         // Node-RED 1.0 compatibles
@@ -88,6 +90,10 @@ module.exports = function(RED) {
                     //Build full message and send
                     let newMsg = {...msg};
                     newMsg.payload = Buffer.concat([header, data.slice( nvl.packages[i].offset, nvl.packages[i].offset + nvl.packages[i].byteSize)]);
+                    //Add port if defined
+                    if (node.port){
+                        newMsg.port = node.port;
+                    }
 
                     send(newMsg);
                 }

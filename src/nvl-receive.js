@@ -34,11 +34,12 @@ module.exports = function(RED) {
 
             //Collect and check nvl definition and listId
             let listId = msg.id || node.listId;
+            let pack = msg.pack || node.pack; 
             let nvl = {};
             if(typeof msg.nvl === 'string' || msg.nvl instanceof String){
                 //Use dynamic nvl
                 try{
-                    nvl = ParseNvlDef(msg.nvl, node, node.gvl, node.pack);
+                    nvl = ParseNvlDef(msg.nvl, node, node.gvl, pack);
                 }catch(err){
                     if (done) {
                         // Node-RED 1.0 compatible

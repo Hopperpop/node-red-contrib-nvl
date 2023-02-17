@@ -8,7 +8,8 @@
             definition: {value:"VAR_GLOBAL\r\n\r\nEND_VAR"},
             listId: {value: 0},
             globaltypes: {value:"", type:"nvl-datatypes", required: false},
-            pack: {value: true, required: true}
+            pack: {value: true, required: true},
+            port: {required: false}
         },
         inputs:1,
         outputs:1,
@@ -30,9 +31,54 @@
                 type:"num",
                 types:["num"]
             });
+            $("#node-input-port").typedInput({
+                type:"num",
+                types:["num"]
+            });
             $("#node-input-pack").typedInput({
                 type:"bool",
                 types:["bool"]
+            });
+            let node = this;
+            $("#node-nvl-editor-export").on("click", function() {
+                var button = document.getElementById("node-nvl-editor-file");
+                var file = "";
+                let gvl =       node.editor.getValue();
+                let listId =    $("#node-input-listId").val();
+                let pack =      $("#node-input-pack").val();
+                let port =      $("#node-input-port").val();
+                let re = /TYPE\s+(N|n)(V|v)(L|l)\s*\:\s*STRUCT(.+?)END_STRUCT\s+END_TYPE/gms;
+                gvl = gvl.replace( re,"VAR_GLOBAL$4END_VAR");
+                re = /VAR_GLOBAL(.+?)END_VAR/gms;
+                gvl = gvl.match(re);
+               
+                if (gvl.length == 1){
+                    gvl = `<GVL>
+    <Declarations><![CDATA[{attribute 'qualified_only'}
+${gvl[0]}]]></Declarations>
+    <NetvarSettings Protocol="UDP">
+      <ListIdentifier>${listId}</ListIdentifier>
+      <Pack>${pack}</Pack>
+      <Checksum>False</Checksum>
+      <Acknowledge>False</Acknowledge>
+      <CyclicTransmission>True</CyclicTransmission>
+      <TransmissionOnChange>False</TransmissionOnChange>
+      <TransmissionOnEvent>False</TransmissionOnEvent>
+      <Interval>T#500ms</Interval>
+      <MinGap>T#20ms</MinGap>
+      <EventVariable>
+      </EventVariable>
+      <ProtocolSettings>
+        <ProtocolSetting Name="Broadcast Adr." Value="255.255.255.255" />
+        <ProtocolSetting Name="Port" Value="${port||1202}" />
+      </ProtocolSettings>
+    </NetvarSettings>
+  </GVL>`
+
+                    button.setAttribute("href", 'data:text/plain;charset=utf-8,' + encodeURIComponent(gvl));
+                    button.setAttribute("download", ($("#node-input-name").val() || "NVL") + ".gvl");
+                    button.click();
+                }
             })
         },
         oneditresize: function(size) {
@@ -68,6 +114,11 @@
     </div>
 
     <div class="form-row">
+        <label style="width: 130px" for="node-input-port"><i class="fa fa-circle-thin "></i> Udp port</label>
+        <input style="width: calc(100% - 140px)" type="text" id="node-input-port">
+    </div>
+
+    <div class="form-row">
         <label style="width: 130px" for="node-input-listId"><i class="fa fa-list-ol"></i> List Id</label>
         <input style="width: calc(100% - 140px)" type="text" id="node-input-listId">
     </div>
@@ -85,6 +136,11 @@
     <div class="form-row node-text-editor-row">
         <label for="node-input-definition" style="width: 200px;"><i class="fa fa-globe"></i> Network variable list</label>
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-definition"></div>
+    </div>
+
+    <div class="form-row">
+        <a hidden id="node-nvl-editor-file"></a>
+        <button type="button" class="red-ui-button" id="node-nvl-editor-export">Export..</button>
     </div>
 </script>
 
