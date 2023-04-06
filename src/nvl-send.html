@@ -115,7 +115,7 @@ ${gvl[0]}]]></Declarations>
 
     <div class="form-row">
         <label style="width: 130px" for="node-input-port"><i class="fa fa-circle-thin "></i> Udp port</label>
-        <input style="width: calc(100% - 140px)" type="text" id="node-input-port">
+        <input style="width: calc(100% - 140px)" type="text" id="node-input-port" placeholder="1202">
     </div>
 
     <div class="form-row">
@@ -147,7 +147,9 @@ ${gvl[0]}]]></Declarations>
 <script type="text/html" data-help-name="nvl-send">
     <p>A parser node to convert an object to a <i>network variable list</i> telegram, who can be sent with an udp node to a Codesys controller. 
         This node needs a variable definition to make the conversion, and a list Id. 
-        The node has an internal memory for merging partial input objects with the previous values.</p>
+        The node has an internal memory for merging partial input objects with the previous values. 
+        Please note that the UDP port setting is only used for the export functionality, and an external UDP node is still required.
+    </p>
     <h3>Inputs</h3>
     <dl class="message-properties">
         <dt>payload<span class="property-type">object</span></dt>
@@ -156,33 +158,42 @@ ${gvl[0]}]]></Declarations>
         <dd>Use this property to set the list Id dynamically.</dd>
         <dt class="optional">nvl<span class="property-type">string</span></dt>
         <dd>Use this property to set the network variable list definition dynamically.</dd>
+        <dt class="optional">pack<span class="property-type">boolean</span></dt>
+        <dd>Use this property to set the pack mode dynamically.</dd>
     </dl>
 
  <h3>Outputs</h3>
      <ol class="node-ports">
             <dl class="message-properties">
                 <dt>payload <span class="property-type">buffer</span></dt>
-                <dd>Buffer containing the telegram data.</dd>
+                <dd>Buffer(s) containing the telegram data.</dd>
             </dl>
      </ol>
 
 <h3>Details</h3>
     <p> The <i>network variable list</i> needs to be defined in the editor or provided with <code>msg.nvl</code> as a string. 
         The definiton follows the IEC-61131-3 syntax, and the parser looks for a VAR_GLOBAL or a structure named NVL.
-        Additional type definitions can be added to make more complex variable definitons: STRUCT, ENUM, UNION,... These can be inserted directily in the nvl definition or from a global defined datatype definition.
-        See the api reference for more information.
+        You can also add additional type definitions such as "STRUCT", "ENUM", and "UNION" to create more complex variable definitions. 
+        These can be inserted directly in the NVL definition or from a global defined datatype definition. For more information, please refer to the API reference.
     </p>
     <p>
         The list Id (COB-ID) should match with the one in the controller. It can be set in the editor or with <code>msg.id</code>.
     </p>
     <p>
-        <code>msg.payload</code> should be an object containing all or subparts of the defined variables with the value that needs to be send. 
+        <code>msg.payload</code> should be an object containing all or subset of the defined variables with the value that needs to be send. 
         Arrays are always handled as zero-indexed. 
         Complex data types like <code>ARRAY[..] OF ARRAY[..] OF myStruct</code> are possible.
-        This node automatically merges the variables with the previous values, making it possible to send a subset of the variables to this node.
-        At startup the default value (ex. 0, FALSE) of the particular data type is used if it's not send in the first <code>msg.payload</code>.
+        This node automatically merges the variables with the previous values, making it possible to send a subset of the variables to this node. At startup, the default value (e.g., 0, FALSE) of the particular data type is used if it's not sent in the first <code>msg.payload</code>.
     </p>
-    <p>The telegram is limited to a data size of 256 bytes, and uses the "Pack variables" option in the Codesys editor. No checksum is calculated.</p>
+    <p>
+        The "Pack variables" should be set the same as in the Codesys editor.</p>
+    <p>
+        To export the configuration, use the export button to create a ".gvl" file that can be imported into Codesys. Make sure to fill in the <i>UDP port</i> to include it in the configuration file. The UDP port will then also be added to <code>msg.port</code> for the <i>UDP out</i> node.
+    </p>
+    <p>
+        Please note that no checksum is calculated, and no acknowledgement is expected.
+    </p> 
+        
 
 <h3>Example</h3>
     <dl class="message-properties">
