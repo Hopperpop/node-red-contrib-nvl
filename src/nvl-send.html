@@ -7,7 +7,9 @@
             name: {value:""},
             definition: {value:"VAR_GLOBAL\r\n\r\nEND_VAR"},
             listId: {value: 0},
-            globaltypes: {value:"", type:"nvl-datatypes", required: false}
+            globaltypes: {value:"", type:"nvl-datatypes", required: false},
+            pack: {value: true, required: true},
+            port: {required: false}
         },
         inputs:1,
         outputs:1,
@@ -28,6 +30,55 @@
             $("#node-input-listId").typedInput({
                 type:"num",
                 types:["num"]
+            });
+            $("#node-input-port").typedInput({
+                type:"num",
+                types:["num"]
+            });
+            $("#node-input-pack").typedInput({
+                type:"bool",
+                types:["bool"]
+            });
+            let node = this;
+            $("#node-nvl-editor-export").on("click", function() {
+                var button = document.getElementById("node-nvl-editor-file");
+                var file = "";
+                let gvl =       node.editor.getValue();
+                let listId =    $("#node-input-listId").val();
+                let pack =      $("#node-input-pack").val();
+                let port =      $("#node-input-port").val();
+                let re = /TYPE\s+(N|n)(V|v)(L|l)\s*\:\s*STRUCT(.+?)END_STRUCT\s+END_TYPE/gms;
+                gvl = gvl.replace( re,"VAR_GLOBAL$4END_VAR");
+                re = /VAR_GLOBAL(.+?)END_VAR/gms;
+                gvl = gvl.match(re);
+               
+                if (gvl.length == 1){
+                    gvl = `<GVL>
+    <Declarations><![CDATA[{attribute 'qualified_only'}
+${gvl[0]}]]></Declarations>
+    <NetvarSettings Protocol="UDP">
+      <ListIdentifier>${listId}</ListIdentifier>
+      <Pack>${pack}</Pack>
+      <Checksum>False</Checksum>
+      <Acknowledge>False</Acknowledge>
+      <CyclicTransmission>True</CyclicTransmission>
+      <TransmissionOnChange>False</TransmissionOnChange>
+      <TransmissionOnEvent>False</TransmissionOnEvent>
+      <Interval>T#500ms</Interval>
+      <MinGap>T#20ms</MinGap>
+      <EventVariable>
+      </EventVariable>
+      <ProtocolSettings>
+        <ProtocolSetting Name="Broadcast Adr." Value="255.255.255.255" />
+        <ProtocolSetting Name="Port" Value="${port||1202}" />
+      </ProtocolSettings>
+    </NetvarSettings>
+  </GVL>`
+
+                    button.setAttribute("href", 'data:text/plain;charset=utf-8,' + encodeURIComponent(gvl));
+                    button.setAttribute("download", ($("#node-input-name").val() || "NVL") + ".gvl");
+                    button.click();
+                }
             })
         },
         oneditresize: function(size) {
@@ -63,8 +114,18 @@
     </div>
 
     <div class="form-row">
+        <label style="width: 130px" for="node-input-port"><i class="fa fa-circle-thin "></i> Udp port</label>
+        <input style="width: calc(100% - 140px)" type="text" id="node-input-port" placeholder="1202">
+    </div>
+
+    <div class="form-row">
         <label style="width: 130px" for="node-input-listId"><i class="fa fa-list-ol"></i> List Id</label>
         <input style="width: calc(100% - 140px)" type="text" id="node-input-listId">
+    </div>
+
+    <div class="form-row">
+        <label style="width: 130px" for="node-input-pack"><i class="fa fa-th"></i> Pack variables</label>
+        <input style="width: calc(100% - 140px)" type="text" id="node-input-pack">
     </div>
 
     <div class="form-row">
@@ -76,12 +137,19 @@
         <label for="node-input-definition" style="width: 200px;"><i class="fa fa-globe"></i> Network variable list</label>
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-definition"></div>
     </div>
+
+    <div class="form-row">
+        <a hidden id="node-nvl-editor-file"></a>
+        <button type="button" class="red-ui-button" id="node-nvl-editor-export">Export..</button>
+    </div>
 </script>
 
 <script type="text/html" data-help-name="nvl-send">
     <p>A parser node to convert an object to a <i>network variable list</i> telegram, who can be sent with an udp node to a Codesys controller. 
         This node needs a variable definition to make the conversion, and a list Id. 
-        The node has an internal memory for merging partial input objects with the previous values.</p>
+        The node has an internal memory for merging partial input objects with the previous values. 
+        Please note that the UDP port setting is only used for the export functionality, and an external UDP node is still required.
+    </p>
     <h3>Inputs</h3>
     <dl class="message-properties">
         <dt>payload<span class="property-type">object</span></dt>
@@ -90,33 +158,42 @@
         <dd>Use this property to set the list Id dynamically.</dd>
         <dt class="optional">nvl<span class="property-type">string</span></dt>
         <dd>Use this property to set the network variable list definition dynamically.</dd>
+        <dt class="optional">pack<span class="property-type">boolean</span></dt>
+        <dd>Use this property to set the pack mode dynamically.</dd>
     </dl>
 
  <h3>Outputs</h3>
      <ol class="node-ports">
             <dl class="message-properties">
                 <dt>payload <span class="property-type">buffer</span></dt>
-                <dd>Buffer containing the telegram data.</dd>
+                <dd>Buffer(s) containing the telegram data.</dd>
             </dl>
      </ol>
 
 <h3>Details</h3>
     <p> The <i>network variable list</i> needs to be defined in the editor or provided with <code>msg.nvl</code> as a string. 
         The definiton follows the IEC-61131-3 syntax, and the parser looks for a VAR_GLOBAL or a structure named NVL.
-        Additional type definitions can be added to make more complex variable definitons: STRUCT, ENUM, UNION,... These can be inserted directily in the nvl definition or from a global defined datatype definition.
-        See the api reference for more information.
+        You can also add additional type definitions such as "STRUCT", "ENUM", and "UNION" to create more complex variable definitions. 
+        These can be inserted directly in the NVL definition or from a global defined datatype definition. For more information, please refer to the API reference.
     </p>
     <p>
         The list Id (COB-ID) should match with the one in the controller. It can be set in the editor or with <code>msg.id</code>.
     </p>
     <p>
-        <code>msg.payload</code> should be an object containing all or subparts of the defined variables with the value that needs to be send. 
+        <code>msg.payload</code> should be an object containing all or subset of the defined variables with the value that needs to be send. 
         Arrays are always handled as zero-indexed. 
         Complex data types like <code>ARRAY[..] OF ARRAY[..] OF myStruct</code> are possible.
-        This node automatically merges the variables with the previous values, making it possible to send a subset of the variables to this node.
-        At startup the default value (ex. 0, FALSE) of the particular data type is used if it's not send in the first <code>msg.payload</code>.
+        This node automatically merges the variables with the previous values, making it possible to send a subset of the variables to this node. At startup, the default value (e.g., 0, FALSE) of the particular data type is used if it's not sent in the first <code>msg.payload</code>.
     </p>
-    <p>The telegram is limited to a data size of 256 bytes, and uses the "Pack variables" option in the Codesys editor. No checksum is calculated.</p>
+    <p>
+        The "Pack variables" should be set the same as in the Codesys editor.</p>
+    <p>
+        To export the configuration, use the export button to create a ".gvl" file that can be imported into Codesys. Make sure to fill in the <i>UDP port</i> to include it in the configuration file. The UDP port will then also be added to <code>msg.port</code> for the <i>UDP out</i> node.
+    </p>
+    <p>
+        Please note that no checksum is calculated, and no acknowledgement is expected.
+    </p> 
+        
 
 <h3>Example</h3>
     <dl class="message-properties">

@@ -6,7 +6,8 @@
             name: {value:""},
             definition: {value:"VAR_GLOBAL\r\n\r\nEND_VAR"},
             listId: {value: 0},
-            globaltypes: {value:"", type:"nvl-datatypes", required: false}
+            globaltypes: {value:"", type:"nvl-datatypes", required: false},
+            pack: {value: true, required: true}
         },
         inputs:1,
         outputs:1,
@@ -27,7 +28,33 @@
             $("#node-input-listId").typedInput({
                 type:"num",
                 types:["num"]
-            })
+            });
+            $("#node-input-pack").typedInput({
+                type:"bool",
+                types:["bool"]
+            });
+            $("#node-nvl-editor-import").on("click", function() {
+                $("#node-nvl-editor-file").click();
+            });
+            let node = this;
+            $("#node-nvl-editor-file").on("change", function(){
+                //---Export gvl---
+                var reader = new FileReader();
+                reader.onload = function(event){
+                    let parser = new DOMParser();
+                    let xmlDoc = parser.parseFromString(event.target.result,"text/xml");
+                    let gvl = xmlDoc.getElementsByTagName("GVL")[0];
+                    let netVarSettings = gvl.getElementsByTagName("NetvarSettings")[0];
+
+                    //Set list id
+                    $("#node-input-listId").typedInput('value', netVarSettings.getElementsByTagName("ListIdentifier")[0].innerHTML);
+                    //Set pack variable
+                    $("#node-input-pack").typedInput('value', netVarSettings.getElementsByTagName("Pack")[0].innerHTML.toLowerCase());
+                    //Set nvl
+                    node.editor.setValue( gvl.getElementsByTagName("Declarations")[0].firstChild.data );
+                }
+                reader.readAsText(this.files[0],"UTF-8");
+            });
         },
         oneditresize: function(size) {
             var rows = $("#dialog-form>div:not(.node-text-editor-row)");
@@ -67,13 +94,25 @@
     </div>
 
     <div class="form-row">
+        <label style="width: 130px" for="node-input-pack"><i class="fa fa-th"></i> Pack variables</label>
+        <input style="width: calc(100% - 140px)" type="text" id="node-input-pack">
+    </div>
+
+    <div class="form-row">
         <label style="width: 130px" for="node-input-globaltypes"><i class="fa fa-file-code-o"></i> Global datatypes</label>
         <input style="width: calc(100% - 140px)" id="node-input-globaltypes">
     </div>
     
+    <div class="form-tips"><b>Limitations:</b> When using the option "Transmit on change" in Codesys, use the "pack" option and limit the nvl size to 256 bytes.</div>
+
     <div class="form-row node-text-editor-row">
         <label for="node-input-definition" style="width: 200px;"><i class="fa fa-globe"></i> Network variable list</label>
         <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-definition"></div>
+    </div>
+
+    <div class="form-row">
+        <input style="display:none" type="file" accept=".gvl,.*" id="node-nvl-editor-file">
+        <button type="button" class="red-ui-button" id="node-nvl-editor-import">Import..</button>
     </div>
 </script>
 
@@ -83,11 +122,13 @@
     <h3>Inputs</h3>
     <dl class="message-properties">
         <dt>payload<span class="property-type">buffer</span></dt>
-        <dd> A buffer containing the full telegram.</dd>
+        <dd> A buffer containing the raw telegram.</dd>
         <dt class="optional">id<span class="property-type">number</span></dt>
         <dd>Use this property to set the list Id dynamically.</dd>
         <dt class="optional">nvl<span class="property-type">string</span></dt>
         <dd>Use this property to set the network variable list definition dynamically.</dd>
+        <dt class="optional">pack<span class="property-type">boolean</span></dt>
+        <dd>Use this property to set the pack mode dynamically.</dd>
     </dl>
 
     <h3>Outputs</h3>
@@ -99,15 +140,17 @@
         </ol>
 
     <h3>Details</h3>
-        <p> The <i>network variable list</i> needs to be defined in the editor or provided with <code>msg.nvl</code> as a string. 
-            The definiton follows the IEC-61131-3 syntax, and the parser looks for a VAR_GLOBAL or a structure named NVL.
-            Additional type definitions can be added to make more complex variable definitons: STRUCT, ENUM, UNION,... These can be inserted directily in the nvl definition or from a global defined datatype definition.
-            See the api reference for more information.
+        <p> The <i>network variable list</i> (NVL) can be defined in the editor or provided as a string with the <code>msg.nvl</code> property. 
+            The definition follows the syntax of IEC-61131-3, and the parser looks for a "VAR_GLOBAL" or a structure named "NVL". 
+            Additional type definitions such as "STRUCT", "ENUM", and "UNION" can be added to create more complex variable definitions. 
+            These can be inserted directly into the NVL definition or from a globally defined datatype. For more information, please refer to the API reference.
         </p>
         <p>
-            The list Id (COB-ID) should match with the one in the telegram. Messages without matching Id are dropped. The Id can be set in the editor or with <code>msg.id</code>.
+            Make sure the list ID (COB-ID) matches the one in the telegram. Messages without matching IDs are dropped. You can set the ID in the editor or with the <code>msg.id</code> property.
         </p>
-        <p>The telegram is limited to a data size of 256 bytes, and uses the "Pack variables" option in the Codesys editor. No checksum is calculated.</p>
+        <p>This node waits for all variables before parsing the data. It does not work when only partial data is sent. Therefore, if you are using the "Transmit on change" option in Codesys, enable the "Pack variables" option (on both sides) and limit the NVL size to 256 bytes.</p>
+        <p>To import a '.gvl' file generated from Codesys, use the import button.</p>
+        <p>Please note that no checksum is calculated, and no acknowledgement is sent.</p>
 
 <h3>Example</h3>
     <dl class="message-properties">
