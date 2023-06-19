@@ -144,8 +144,8 @@ module.exports = function(RED) {
                     //Save succesfull packages assembly and remove older data
                     node.mem[listId].cntFull = tele.counter;
                     Object.keys(node.mem[listId]).forEach(key => {
-                        if ( helper.isOldId(key, tele.counter) ){
-                            delete node.mem[listId];
+                        if ( helper.isOldId(Number(key), tele.counter) ){
+                            delete node.mem[listId][key];
                         }
                     });
 
