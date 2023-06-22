@@ -23,7 +23,7 @@ Supported datatypes:
 ![node-red-contrib-nvl](https://user-images.githubusercontent.com/11853634/180651404-6e4dfcec-39a8-4b2b-ad70-1a76e0d3ca50.gif)
 
 # Changelog
-v1.2.0
+v1.2.x
 > Support for nvl with datasize bigger than 256 bytes.  
 
 > Add import/export functionality to .gvl file.

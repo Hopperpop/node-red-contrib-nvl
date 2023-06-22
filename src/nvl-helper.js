@@ -124,5 +124,5 @@ exports.chopNvl = function(nvl, packed = true){
  * @returns {boolean} - Id is older than refId
  */
 exports.isOldId = function( id, refId){
-    return ((id + 65536 - refId) % 65536) > 32768;
+    return refId >= 0 && ((id + 65536 - refId) % 65536) > 32768;
 }
